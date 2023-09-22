@@ -59,7 +59,7 @@ export class Library {
       eventPlace: entry.eventPlace,
       note: entry.note,
       page: entry.page,
-      pdf: entry.pdf,
+      pdf: entry.pdfs,
       publisher: entry.publisher,
       publisherPlace: entry.publisherPlace,
       title: entry.title,
@@ -162,19 +162,21 @@ export abstract class Entry {
   private _rootdir?: string;
 
 
-  public get pdf(): string {
-    if (!this.files || !this._rootdir) return "";
+  public get pdfs(): string[] {
+    if (!this.files || !this._rootdir) return []
 
-    for (const file of this.files) {
+    let pdfs: string[] = []
+
+    for (var file of this.files) {
       if (file.endsWith('.pdf')) {
         if (file.startsWith(this._rootdir)) {
-          return file.substring(this._rootdir.length);
+          file = file.substring(this._rootdir.length);
         }
-        return file;
+        pdfs.push(file);
       }
     }
 
-    return "";
+    return pdfs
   }
 
   /**
