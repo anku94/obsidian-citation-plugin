@@ -24,6 +24,7 @@ export const TEMPLATE_VARIABLES = {
   eventPlace: 'Location of event',
   note: '',
   page: 'Page or page range',
+  pdf: 'Relative path to PDF, assuming in vault',
   publisher: '',
   publisherPlace: 'Location of publisher',
   title: '',
@@ -58,6 +59,7 @@ export class Library {
       eventPlace: entry.eventPlace,
       note: entry.note,
       page: entry.page,
+      pdf: entry.pdf,
       publisher: entry.publisher,
       publisherPlace: entry.publisherPlace,
       title: entry.title,
@@ -125,6 +127,13 @@ export interface Author {
  * "citekey."
  */
 export abstract class Entry {
+  constructor(rootdir: string) {
+    if (!rootdir.endsWith("/")) {
+      this._rootdir = rootdir + "/";
+    } else {
+      this._rootdir = rootdir;
+    }
+  }
   /**
    * Unique identifier for the entry (also the citekey).
    */
@@ -149,6 +158,24 @@ export abstract class Entry {
 
   public abstract DOI?: string;
   public abstract files?: string[];
+
+  private _rootdir?: string;
+
+
+  public get pdf(): string {
+    if (!this.files || !this._rootdir) return "";
+
+    for (const file of this.files) {
+      if (file.endsWith('.pdf')) {
+        if (file.startsWith(this._rootdir)) {
+          return file.substring(this._rootdir.length);
+        }
+        return file;
+      }
+    }
+
+    return "";
+  }
 
   /**
    * The date of issue. Many references do not contain information about month
@@ -243,8 +270,8 @@ export interface EntryDataCSL {
 }
 
 export class EntryCSLAdapter extends Entry {
-  constructor(private data: EntryDataCSL) {
-    super();
+  constructor(private rootdir: string, private data: EntryDataCSL) {
+    super(rootdir);
   }
 
   eprint: string = null;
@@ -386,8 +413,8 @@ export class EntryBibLaTeXAdapter extends Entry {
   _year?: string;
   _note?: string[];
 
-  constructor(private data: EntryDataBibLaTeX) {
-    super();
+  constructor(private rootdir: string, private data: EntryDataBibLaTeX) {
+    super(rootdir);
 
     Object.entries(BIBLATEX_PROPERTY_MAPPING).forEach(
       (map: [string, string]) => {

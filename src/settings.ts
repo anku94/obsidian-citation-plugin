@@ -34,6 +34,7 @@ export class CitationsPluginSettings {
 
 export class CitationSettingTab extends PluginSettingTab {
   private plugin: CitationPlugin;
+  private root_dir: string;
 
   citationPathLoadingEl: HTMLElement;
   citationPathErrorEl: HTMLElement;
@@ -42,6 +43,16 @@ export class CitationSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: CitationPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+    this.root_dir = this.getVaultAbsolutePath(app);
+  }
+
+  getVaultAbsolutePath(app: App): string {
+    let adapter = app.vault.adapter;
+    if (adapter instanceof FileSystemAdapter) {
+      return adapter.getBasePath();
+    }
+
+    return null;
   }
 
   open(): void {
@@ -130,6 +141,14 @@ export class CitationSettingTab extends PluginSettingTab {
           },
         ),
       );
+
+    new Setting(containerEl)
+    .setName('Vault root dir')
+    .setDesc(
+      'Root directory of the vault, for informational purposes.'
+    )
+    .addText((input) =>
+    this.buildValueInput(input.setPlaceholder(this.root_dir), 'vaultRootDir', (value) =>{}));
 
     this.citationPathLoadingEl = containerEl.createEl('p', {
       cls: 'zoteroSettingCitationPathLoading d-none',

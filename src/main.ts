@@ -188,11 +188,16 @@ export default class CitationPlugin extends Plugin {
    * the vault directory.
    */
   resolveLibraryPath(rawPath: string): string {
+    return path.resolve(this.getVaultRoot(), rawPath);
+  }
+
+  getVaultRoot(): string {
     const vaultRoot =
       this.app.vault.adapter instanceof FileSystemAdapter
         ? this.app.vault.adapter.getBasePath()
         : '/';
-    return path.resolve(vaultRoot, rawPath);
+
+    return vaultRoot;
   }
 
   async loadLibrary(): Promise<Library> {
@@ -222,7 +227,7 @@ export default class CitationPlugin extends Plugin {
           });
         })
         .then((entries: EntryData[]) => {
-          let adapter: new (data: EntryData) => Entry;
+          let adapter: new (rootdir: string, data: EntryData) => Entry;
           let idKey: string;
 
           switch (this.settings.citationExportFormat) {
@@ -238,7 +243,7 @@ export default class CitationPlugin extends Plugin {
 
           this.library = new Library(
             Object.fromEntries(
-              entries.map((e) => [(e as IIndexable)[idKey], new adapter(e)]),
+              entries.map((e) => [(e as IIndexable)[idKey], new adapter(this.getVaultRoot(), e)]),
             ),
           );
           console.debug(

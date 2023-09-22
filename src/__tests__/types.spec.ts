@@ -139,7 +139,7 @@ function loadBibLaTeXLibrary(entries: EntryDataBibLaTeX[]): Library {
     Object.fromEntries(
       entries.map((e: EntryDataBibLaTeX) => [
         e.key,
-        new EntryBibLaTeXAdapter(e),
+        new EntryBibLaTeXAdapter("/", e),
       ]),
     ),
   );
@@ -236,7 +236,7 @@ describe('csl library', () => {
   function loadLibrary(): Library {
     return new Library(
       Object.fromEntries(
-        entries.map((e: EntryDataCSL) => [e.id, new EntryCSLAdapter(e)]),
+        entries.map((e: EntryDataCSL) => [e.id, new EntryCSLAdapter("/", e)]),
       ),
     );
   }
